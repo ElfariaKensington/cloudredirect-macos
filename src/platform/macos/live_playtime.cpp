@@ -16,7 +16,7 @@ void Capture(void*,DobbyRegisterContext* context){if(installed)user.store((void*
 }
 bool Resolve(uintptr_t,size_t,ParseFromArrayFn){
     std::string error;if(!MacProfile::Resolve(profile,error))return false;
-    writer=profile.UniquePattern("FF 43 01 D1 F8 5F 01 A9 F6 57 02 A9 F4 4F 03 A9 FD 7B 04 A9 FD 03 01 91 5F 04 00 71 2B 05 00 54 F3 03 01 AA F4 03 00 AA F7 03 02 2A 55 01 80 52 78 02 40 F9 16 0B 43 29 5F 00 15 6B 55 80 95 1A");
+    writer=profile.UniquePattern(profile.build->writer);
     const char* name="CPlayer_GetLastPlayedTimes_Response";
     responseVtable=profile.FindVtable((std::to_string(strlen(name))+name).c_str());
     if(!writer||!responseVtable){LOG("[Stats] Native live-playtime entries did not resolve uniquely");return false;}

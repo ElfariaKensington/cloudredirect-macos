@@ -54,7 +54,7 @@ bool Initialize(const std::string& cloudRedirectRoot,StatsHooks::SerializeFn ser
     if(!MetadataSync::AchievementsEnabled()&&!MetadataSync::PlaytimeEnabled())return true;
     MacProfile::Profile profile;std::string error;
     if(!MacProfile::Resolve(profile,error))return false;
-    void* send=profile.UniquePattern("FF 03 02 D1 F6 57 05 A9 F4 4F 06 A9 FD 7B 07 A9 FD C3 01 91 F3 03 01 AA F4 03 00 AA 08 2B 00 F0 08 15 40 F9 08 01 40 B9 E8 00 00 34 40 27 00 B0 00 D0 13 91 A2 A3 00 D1 01 02 80 52 D2 6D 06 94");
+    void* send=profile.UniquePattern(profile.build->send);
     if(!send){LOG("[Stats] ARM64 BAsyncSend did not resolve uniquely; stats hooks inactive");return false;}
     state=new State;state->serialize=std::move(serialize);state->send=send;state->profile=profile;
         StatsStore::SetCloudProvider(

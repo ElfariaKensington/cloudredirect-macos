@@ -13,6 +13,50 @@
 #include <algorithm>
 #include "xdg.h"
 namespace MacProfile {
+static const BuildInfo kBuilds[]={
+    {   // Steam client 1792618285
+        "1792618285",
+        {0x1d,0x28,0x26,0x16,0xb6,0x7e,0x30,0xa6,0xb0,0xaf,0xe4,0xd5,0x88,0x06,0x10,0xe7},
+        "FF C3 02 D1 F6 57 08 A9 F4 4F 09 A9 FD 7B 0A A9 FD 83 02 91 F3 03 01 AA F4 03 00 AA ?? ?? ?? ?? ?? ?? ?? ?? 08 01 40 F9 A8 83 1D F8 08 00 40 F9 08 29 40 F9 00 01 3F D6",
+        "F6 57 BD A9 F4 4F 01 A9 FD 7B 02 A9 FD 83 00 91 E2 01 F8 37 F4 03 01 AA F3 03 00 AA F5 03 02 2A 08 00 40 F9 08 15 40 F9 00 01 3F D6",
+        "FF 03 02 D1 F6 57 05 A9 F4 4F 06 A9 FD 7B 07 A9 FD C3 01 91 F3 03 01 AA F4 03 00 AA 08 2B 00 F0 08 15 40 F9 08 01 40 B9 E8 00 00 34 40 27 00 B0 00 D0 13 91 A2 A3 00 D1 01 02 80 52 D2 6D 06 94",
+        "FF 43 01 D1 F8 5F 01 A9 F6 57 02 A9 F4 4F 03 A9 FD 7B 04 A9 FD 03 01 91 5F 04 00 71 2B 05 00 54 F3 03 01 AA F4 03 00 AA F7 03 02 2A 55 01 80 52 78 02 40 F9 16 0B 43 29 5F 00 15 6B 55 80 95 1A",
+        "FC 6F BA A9 FA 67 01 A9 F8 5F 02 A9 F6 57 03 A9 F4 4F 04 A9 FD 7B 05 A9 FD 43 01 91 FF C3 08 D1 FB 03 07 AA F9 03 06 AA E5 33 00 F9 F8 03 04 AA F4 03 03 AA F3 03 02 AA F5 03 01 AA F6 03 00 AA C8 87 00 90 08 B1 40 F9 08 01 40 F9 A8 03 1A F8",
+        {0x59fd60,{0x0a,0x68,0x40,0xb9,0x5f,0x05,0x00,0x31,0xe0,0x01,0x00,0x54,0x08,0x40,0x40,0xf9}},
+        {0x59c108,{0x3f,0x14,0x00,0x71,0x2d,0x02,0x00,0x54,0x3f,0x50,0x00,0x71,0xe8,0x03,0x00,0x54}},
+        {0x59fefc,{0xf6,0x57,0xbd,0xa9,0xf4,0x4f,0x01,0xa9,0xfd,0x7b,0x02,0xa9,0xfd,0x83,0x00,0x91}},
+        {0x1096b60,{0xfc,0x6f,0xba,0xa9,0xfa,0x67,0x01,0xa9,0xf8,0x5f,0x02,0xa9,0xf6,0x57,0x03,0xa9}},
+        {0x1097d50,{0xff,0xc3,0x00,0xd1,0xf4,0x4f,0x01,0xa9,0xfd,0x7b,0x02,0xa9,0xfd,0x83,0x00,0x91}},
+        {0x1097acc,{0xff,0xc3,0x00,0xd1,0xf4,0x4f,0x01,0xa9,0xfd,0x7b,0x02,0xa9,0xfd,0x83,0x00,0x91}},
+        {0x1098644,{0xc0,0x01,0x00,0xb4,0xf4,0x4f,0xbe,0xa9,0xfd,0x7b,0x01,0xa9,0xfd,0x43,0x00,0x91}},
+        {0x1098608,{0xc0,0x01,0x00,0xb4,0xf4,0x4f,0xbe,0xa9,0xfd,0x7b,0x01,0xa9,0xfd,0x43,0x00,0x91}},
+        {0x1098420,{0xa0,0x05,0x00,0xb4,0xf6,0x57,0xbd,0xa9,0xf4,0x4f,0x01,0xa9,0xfd,0x7b,0x02,0xa9}},
+        0x1876438,0x1518
+    },
+    {   // Steam client 1794424036
+        "1794424036",
+        {0x63,0x3e,0x66,0x24,0xa5,0x21,0x3f,0x89,0xad,0x7d,0xb3,0x32,0x0c,0x4e,0xe7,0x3b},
+        "FF C3 02 D1 F6 57 08 A9 F4 4F 09 A9 FD 7B 0A A9 FD 83 02 91 F3 03 01 AA F4 03 00 AA ?? ?? ?? ?? 08 F9 47 F9 08 01 40 F9 A8 83 1D F8 08 00 40 F9 08 29 40 F9 00 01 3F D6",
+        "F6 57 BD A9 F4 4F 01 A9 FD 7B 02 A9 FD 83 00 91 ?? ?? ?? ?? F4 03 01 AA F3 03 00 AA F5 03 02 2A 08 00 40 F9 08 15 40 F9 00 01 3F D6",
+        "FF 03 02 D1 F6 57 05 A9 F4 4F 06 A9 FD 7B 07 A9 FD C3 01 91 F3 03 01 AA F4 03 00 AA ?? ?? ?? ?? 08 99 42 F9 08 01 40 B9 ?? ?? ?? ?? ?? ?? ?? ?? 00 D4 1F 91 A2 A3 00 D1 01 02 80 52 ?? ?? ?? ??",
+        "FF 43 01 D1 F8 5F 01 A9 F6 57 02 A9 F4 4F 03 A9 FD 7B 04 A9 FD 03 01 91 5F 04 00 71 ?? ?? ?? ?? F3 03 01 AA F4 03 00 AA F7 03 02 2A 55 01 80 52 78 02 40 F9 16 0B 43 29 5F 00 15 6B 55 80 95 1A",
+        "FC 6F BA A9 FA 67 01 A9 F8 5F 02 A9 F6 57 03 A9 F4 4F 04 A9 FD 7B 05 A9 FD 43 01 91 FF C3 08 D1 FB 03 07 AA F9 03 06 AA E5 33 00 F9 F8 03 04 AA F4 03 03 AA F3 03 02 AA F5 03 01 AA F6 03 00 AA ?? ?? ?? ?? 08 F9 47 F9 08 01 40 F9 A8 03 1A F8",
+        {0x5b79e0,{0x0a,0x28,0x40,0xb9,0x5f,0x05,0x00,0x31,0xe0,0x01,0x00,0x54,0x08,0x20,0x40,0xf9}},
+        {0x5b3e38,{0x3f,0x14,0x00,0x71,0x2d,0x02,0x00,0x54,0x3f,0x50,0x00,0x71,0xe8,0x03,0x00,0x54}},
+        {0x5b7b7c,{0xf6,0x57,0xbd,0xa9,0xf4,0x4f,0x01,0xa9,0xfd,0x7b,0x02,0xa9,0xfd,0x83,0x00,0x91}},
+        {0x10c9b2c,{0xfc,0x6f,0xba,0xa9,0xfa,0x67,0x01,0xa9,0xf8,0x5f,0x02,0xa9,0xf6,0x57,0x03,0xa9}},
+        {0x10cad1c,{0xff,0xc3,0x00,0xd1,0xf4,0x4f,0x01,0xa9,0xfd,0x7b,0x02,0xa9,0xfd,0x83,0x00,0x91}},
+        {0x10caa98,{0xff,0xc3,0x00,0xd1,0xf4,0x4f,0x01,0xa9,0xfd,0x7b,0x02,0xa9,0xfd,0x83,0x00,0x91}},
+        {0x10cb554,{0xc0,0x01,0x00,0xb4,0xf4,0x4f,0xbe,0xa9,0xfd,0x7b,0x01,0xa9,0xfd,0x43,0x00,0x91}},
+        {0x10cb518,{0xc0,0x01,0x00,0xb4,0xf4,0x4f,0xbe,0xa9,0xfd,0x7b,0x01,0xa9,0xfd,0x43,0x00,0x91}},
+        {0x10cb330,{0xa0,0x05,0x00,0xb4,0xf6,0x57,0xbd,0xa9,0xf4,0x4f,0x01,0xa9,0xfd,0x7b,0x02,0xa9}},
+        0x18b3ca8,0x15c8
+    },
+};
+const BuildInfo* FindBuild(const uint8_t u[16]){
+    for(const auto& b:kBuilds)if(!memcmp(b.uuid,u,16))return &b;
+    return nullptr;
+}
 bool Profile::Readable(const void* p,size_t size) const {
     auto a=(uintptr_t)p;for(auto r:ranges)if(a>=r.begin&&a<=r.end&&size<=r.end-a)return true;return false;
 }
@@ -61,11 +105,15 @@ bool Resolve(Profile& out,std::string& error,bool allowLoad) {
     locate();
     if(!mh&&allowLoad){std::string path=XdgHome()+"/Library/Application Support/Steam/Steam.AppBundle/Steam/Contents/MacOS/steamclient.dylib";if(!dlopen(path.c_str(),RTLD_NOW|RTLD_LOCAL)){error=dlerror();return false;}locate();}
     if(!mh||mh->magic!=MH_MAGIC_64||mh->cputype!=CPU_TYPE_ARM64){error="ARM64 steamclient.dylib is not loaded";return false;}
-    bool audited=false;
+    out.build=nullptr;uint8_t seen[16]={};bool haveUuid=false;
     out.ranges.clear();auto* c=(const load_command*)(mh+1);
-    for(uint32_t i=0;i<mh->ncmds;++i){if(c->cmd==LC_UUID){const unsigned char expected[]={0x1d,0x28,0x26,0x16,0xb6,0x7e,0x30,0xa6,0xb0,0xaf,0xe4,0xd5,0x88,0x06,0x10,0xe7};audited=!memcmp(((const uuid_command*)c)->uuid,expected,16);}
+    for(uint32_t i=0;i<mh->ncmds;++i){if(c->cmd==LC_UUID){memcpy(seen,((const uuid_command*)c)->uuid,16);haveUuid=true;out.build=FindBuild(seen);}
         if(c->cmd==LC_SEGMENT_64){auto*s=(const segment_command_64*)c;if((s->initprot&VM_PROT_READ)&&s->vmsize)out.ranges.push_back({s->vmaddr+out.slide,s->vmaddr+out.slide+s->vmsize,(bool)(s->initprot&VM_PROT_EXECUTE),(bool)(s->initprot&VM_PROT_WRITE)});}c=(const load_command*)((const char*)c+c->cmdsize);}
-    if(!audited){error="This Steam build has not been validated for ARM64 cloud interception; hooks remain inactive";return false;}
+    if(!out.build){
+        char text[48]="unknown";
+        if(haveUuid)snprintf(text,sizeof(text),"%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",seen[0],seen[1],seen[2],seen[3],seen[4],seen[5],seen[6],seen[7],seen[8],seen[9],seen[10],seen[11],seen[12],seen[13],seen[14],seen[15]);
+        error=std::string("This Steam build (steamclient UUID ")+text+") has not been validated for ARM64 cloud interception; hooks remain inactive";return false;
+    }
     // UUID validation above remains mandatory; cache only successful resolution
     // for this loaded image so startup consumers do not rescan its entire text.
     static std::mutex profileMutex;
@@ -74,8 +122,8 @@ bool Resolve(Profile& out,std::string& error,bool allowLoad) {
     if(cached.transport && !out.ranges.empty() && cached.slide==out.slide && cached.ranges.front().begin==out.ranges.front().begin){out=cached;return true;}
     out.transport=out.FindVtable("30CClientUnifiedServiceTransport");
     out.remoteStorage=out.FindVtable("18CUserRemoteStorage");
-    out.serialize=(SerializeFn)out.UniquePattern("FF C3 02 D1 F6 57 08 A9 F4 4F 09 A9 FD 7B 0A A9 FD 83 02 91 F3 03 01 AA F4 03 00 AA ?? ?? ?? ?? ?? ?? ?? ?? 08 01 40 F9 A8 83 1D F8 08 00 40 F9 08 29 40 F9 00 01 3F D6");
-    out.parse=(ParseFn)out.UniquePattern("F6 57 BD A9 F4 4F 01 A9 FD 7B 02 A9 FD 83 00 91 E2 01 F8 37 F4 03 01 AA F3 03 00 AA F5 03 02 2A 08 00 40 F9 08 15 40 F9 00 01 3F D6");
+    out.serialize=(SerializeFn)out.UniquePattern(out.build->serialize);
+    out.parse=(ParseFn)out.UniquePattern(out.build->parse);
     if(!out.transport||!out.remoteStorage||!out.serialize||!out.parse){error=std::string("ARM64 profile missing:")+(out.transport?"":" transport")+(out.serialize?"":" serializer")+(out.parse?"":" parser");return false;}
     cached=out;
     return true;

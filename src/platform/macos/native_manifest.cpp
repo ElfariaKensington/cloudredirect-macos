@@ -58,7 +58,7 @@ bool PatchVector(void* vector,const DepotPins& pins){
 }
 bool Initialize(const MacProfile::Profile& profile,const Json::Value& config,const std::string& steamPath){
     if(!config["manifest_pinning"].boolean())return true;
-    void* target=profile.UniquePattern("FC 6F BA A9 FA 67 01 A9 F8 5F 02 A9 F6 57 03 A9 F4 4F 04 A9 FD 7B 05 A9 FD 43 01 91 FF C3 08 D1 FB 03 07 AA F9 03 06 AA E5 33 00 F9 F8 03 04 AA F4 03 03 AA F3 03 02 AA F5 03 01 AA F6 03 00 AA C8 87 00 90 08 B1 40 F9 08 01 40 F9 A8 03 1A F8");
+    void* target=profile.UniquePattern(profile.build->manifest);
     if(!target){LOG("[ManifestPin] Native dependency builder did not resolve uniquely");return false;}
     state=new State;state->pins=LoadPins(config,steamPath+"config/stplug-in");state->target=target;
     if(DobbyHook(target,(void*)Build,(void**)&state->original)!=0)return false;
