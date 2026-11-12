@@ -1,0 +1,75 @@
+name: macOS Build and Release (self-hosted)
+
+# Same as macos-build-release.yml, on your own Apple Silicon Mac. The runner needs the labels
+# self-hosted, macOS, ARM64 plus Xcode (swift, clang), CMake and git. Manual trigger only; it builds
+# whichever branch you pick in "Run workflow".
+on:
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Create a GitHub release and publish the macOS ZIP
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: macos-build-selfhosted-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build CloudRedirect for macOS (self-hosted)
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 60
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          clean: true
+
+      - name: Verify toolchain
+        run: |
+          xcodebuild -version
+          xcrun --sdk macosx --show-sdk-version
+          swift --version
+          cmake --version | head -1
+          swift package --package-path ui-macos dump-package >/dev/null
+
+      - name: Build and validate full app and ZIP
+        run: |
+          rm -rf "$GITHUB_WORKSPACE/out"
+          ./scripts/macos/build-full-ui.sh "$GITHUB_WORKSPACE/out"
+
+      - name: Generate release identifiers
+        id: release
+        shell: bash
+        run: |
+          DATE="$(date -u +'%Y.%m.%d')"
+          BUILD="$(printf '%04d' "$GITHUB_RUN_NUMBER")"
+          echo "tag=macos-${DATE}.${BUILD}" >> "$GITHUB_OUTPUT"
+          echo "name=CloudRedirect for macOS ${DATE//./-} (Build ${BUILD})" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CloudRedirect-macOS-arm64
+          path: out/CloudRedirect-macOS-arm64.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Create GitHub release
+        if: inputs.publish_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_NAME: ${{ steps.release.outputs.name }}
+        run: |
+          gh release create "$RELEASE_TAG" \
+            out/CloudRedirect-macOS-arm64.zip \
+            --target "$GITHUB_SHA" \
+            --title "$RELEASE_NAME" \
+            --generate-notes
