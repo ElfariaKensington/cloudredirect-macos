@@ -11,9 +11,13 @@
 #include <cstdio>
 #include <cstdlib>
 #include <unistd.h>
+#include <dlfcn.h>
+#include <cstdint>
 static int failures=0;
 static void Check(bool ok,const char* what){printf("  %s %s\n",ok?"ok  ":"FAIL",what);if(!ok)++failures;}
 int main(){
+    // STEAMCLIENT_PATH=<dylib> validates another steamclient.dylib (e.g. an older build) instead.
+    if(const char* other=getenv("STEAMCLIENT_PATH"))if(!dlopen(other,RTLD_NOW|RTLD_LOCAL)){printf("FAIL: %s\n",dlerror());return 1;}
     MacProfile::Profile p;std::string error;
     if(!MacProfile::Resolve(p,error,true)){printf("FAIL: %s\n",error.c_str());return 1;}
     printf("Steam client build %s recognised\n",p.build->steamBuild);
@@ -28,5 +32,9 @@ int main(){
     Check(LivePlaytime::Resolve(0,0,nullptr),"live playtime entries and response layout");
     Check(p.transport&&p.Executable(p.transport[5])&&p.Executable(p.transport[7])&&p.Executable(p.transport[8]),"transport slots 5, 7, 8 are code");
     Check(p.remoteStorage&&p.Executable(p.remoteStorage[24]),"remote storage slot 24 is code");
+    if(getenv("DUMP_SLOTS")&&p.transport&&p.remoteStorage){
+        auto dump=[&](const char* n,void* f){auto* w=(const uint32_t*)f;printf("SLOT %s rva=%lx:",n,(unsigned long)((uintptr_t)f-p.slide));for(int i=0;i<14;i++)printf(" %08x",w[i]);printf("\n");};
+        dump("t5",p.transport[5]);dump("t7",p.transport[7]);dump("t8",p.transport[8]);dump("rs24",p.remoteStorage[24]);
+    }
     printf("%s\n",failures?"Steam build validation: FAIL":"Steam build validation: PASS");fflush(stdout);_Exit(failures?1:0);
 }

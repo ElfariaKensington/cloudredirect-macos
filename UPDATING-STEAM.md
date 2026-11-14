@@ -1,8 +1,29 @@
 # Supporting a new Steam build (macOS)
 
-The macOS runtime only activates for `steamclient.dylib` builds listed in `kBuilds`
-(`src/platform/macos/native_profile.cpp`), matched by the image's `LC_UUID`. Unknown builds leave
-the hooks inactive and log the UUID, so a Steam update never runs unvalidated code.
+## Automatic matching (default for new Steam builds)
+
+Builds not listed in `kBuilds` are no longer refused outright. `DeriveBuild` in
+`src/platform/macos/native_profile.cpp` locates every per-build constant itself:
+
+- the 9 KV functions and the 5 AOB functions through masked instruction signatures
+  (`native_signatures.h`; every unique candidate must agree on one address),
+- `globalEnginePtrPtr` and `appInfoCacheOffset` by voting across all `getAppInfo` call sites
+  (`ldr xN,[global]; mov wM,#off; add x0,xN,xM`), which must be (nearly) unanimous.
+
+The usual protobuf/KV self-tests still gate activation, so a build whose layout moved too far
+stays inactive and says why in the log and in Setup. Only then do you need the manual steps below.
+Regenerate the signature table from a reference and the newest binary with
+`scripts/macos/steam_signatures.py REF.arm64 NEW.arm64 --emit-header src/platform/macos/native_signatures.h`
+(`lipo -thin arm64` the dylibs first; needs `capstone`). Run `build/macos_build_validation_tests`
+against the installed Steam after every Steam update.
+
+## Manual `kBuilds` entries (fallback)
+
+The macOS runtime uses the audited entry for `steamclient.dylib` builds listed in `kBuilds`
+(`src/platform/macos/native_profile.cpp`), matched by the image's `LC_UUID`.
+The desktop installer treats this as a warning rather than a hard installation
+block: users may explicitly choose Install Anyway / Update Anyway. That consent
+does not bypass runtime validation or enable hooks on an unsupported build.
 
 Each entry holds everything that differs per build:
 

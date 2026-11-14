@@ -5,6 +5,10 @@ struct SetupView: View {
     @State private var removeRuntime = false
     @State private var purge = false
     @State private var countdown = 5
+    @State private var runtimeBusy = false
+    @State private var showCompatibilityWarning = false
+    @State private var compatibilityMessage = ""
+    @State private var pendingOperation = "deploy"
     private var installed: Bool { backend.deploy["alreadyDeployed"] as? Bool == true }
     private var updateAvailable: Bool { backend.deploy["updateAvailable"] as? Bool == true }
     var body: some View {
@@ -20,7 +24,7 @@ struct SetupView: View {
                     }
                 }
                 if let message = backend.deploy["statusMessage"] as? String, !message.isEmpty { Text(message).font(.caption).foregroundStyle(.secondary) }
-            }
+            }.disabled(runtimeBusy)
             Text("Managed games").font(.headline)
             Panel {
                 SettingLine(title: "Cloud save redirection", detail: "Use CloudRedirect for your managed games.") { Toggle("Cloud save redirection", isOn: $backend.redirectEnabled).labelsHidden().accessibilityLabel("Cloud save redirection").toggleStyle(.switch).tint(sage) }
@@ -30,8 +34,14 @@ struct SetupView: View {
             }
             Text("Restart Steam after changing runtime or managed games.").font(.caption).foregroundStyle(.secondary)
             Text("Reset").font(.headline)
-            Panel { SettingLine(title: "Remove CloudRedirect data", detail: "Remove the runtime, credentials, settings, and local data.") { ActionButton(title: "Remove All Data…") { countdown = 5; purge = true } } }
+            Panel { SettingLine(title: "Remove CloudRedirect data", detail: "Remove the runtime, credentials, settings, and local data.") { ActionButton(title: "Remove All Data…") { countdown = 5; purge = true } } }.disabled(runtimeBusy)
         }.onAppear { backend.loadSetup() }
+        .alert("Steam compatibility is unverified", isPresented: $showCompatibilityWarning) {
+            Button("Cancel", role: .cancel) {}
+            Button(pendingOperation == "update" ? "Update Anyway" : "Install Anyway") { perform(pendingOperation, confirmed: true) }
+        } message: {
+            Text("This Steam version could not pass the compatibility check. You can continue installing, but this does not make it compatible: runtime safety checks remain enabled and incompatible hooks will stay inactive. Back up your saves before use.\n\nDetails: \(compatibilityMessage)")
+        }
         .confirmationDialog("Remove the runtime from Steam?", isPresented: $removeRuntime) { Button("Remove Runtime", role: .destructive) { perform("undeploy") }; Button("Cancel", role: .cancel) {} } message: { Text("Your saves and settings are retained.") }
         .sheet(isPresented: $purge) {
             VStack(alignment: .leading, spacing: 18) {
@@ -41,7 +51,20 @@ struct SetupView: View {
             }.padding(24).frame(width: 450).task { while countdown > 0 && !Task.isCancelled { try? await Task.sleep(for: .seconds(1)); countdown -= 1 } }
         }
     }
-    private func perform(_ operation: String) { backend.call(operation, target: "deployer") { _ in backend.refreshDeployment(); backend.refreshProperties() } }
+    private func perform(_ operation: String, confirmed: Bool = false) {
+        guard !runtimeBusy else { return }
+        runtimeBusy = true
+        backend.call(operation, [confirmed], target: "deployer") { result in
+            runtimeBusy = false
+            if let warning = result as? [String: Any], warning["confirmationRequired"] as? Bool == true {
+                pendingOperation = operation
+                compatibilityMessage = warning["message"] as? String ?? "Compatibility could not be verified."
+                showCompatibilityWarning = true
+            } else {
+                backend.refreshDeployment(); backend.refreshProperties()
+            }
+        }
+    }
 }
 
 struct StatsView: View {

@@ -164,8 +164,17 @@ import CloudRedirectSupport
         if target == "deployer" {
             if method == "checkPrerequisites" { await checkDeployment(); return nil }
             if ["deploy", "update", "undeploy", "purgeAll"].contains(method) {
-                if ["deploy", "update"].contains(method) { _ = try await command(["diagnose"]).json() }
-                try await Task.detached { try RuntimeInstaller.install(["deploy", "update"].contains(method)) }.value
+                if ["deploy", "update"].contains(method) {
+                    try RuntimeInstaller.ensureSteamClosed()
+                    let result = try await RuntimeInstallation.perform(confirmed: args.first as? Bool == true,
+                        diagnose: { try await self.command(["diagnose"]) },
+                        install: { try await Task.detached { try RuntimeInstaller.install(true) }.value })
+                    if case .confirmationRequired(let message) = result {
+                        return ["confirmationRequired": true, "message": message]
+                    }
+                } else {
+                    try await Task.detached { try RuntimeInstaller.install(false) }.value
+                }
                 if method == "purgeAll" {
                     let result = try await command(["purge-credentials"])
                     guard result.status == 0 else { throw AppError.message("Could not remove credentials. Local data was retained.") }

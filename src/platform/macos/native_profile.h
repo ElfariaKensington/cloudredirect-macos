@@ -25,6 +25,7 @@ const BuildInfo* FindBuild(const uint8_t uuid[16]);
 struct Profile {
     intptr_t slide=0;
     const BuildInfo* build=nullptr;
+    bool derived=false;          // build constants were located by signature, not taken from kBuilds
     std::vector<Range> ranges;
     void** transport=nullptr;
     void** remoteStorage=nullptr;
